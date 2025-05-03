@@ -8,10 +8,25 @@ export default defineConfig({
       entry: "./lib/index.ts",
       name: "CreateContextState",
       formats: ["es"],
-      fileName: (format) => `create-context-state.${format}.js`,
+      fileName: () => "index.js",
     },
     rollupOptions: {
       external: ["react", "react-dom", "react/jsx-runtime"],
+      output: {
+        format: "es",
+        dir: "dist",
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name].js",
+        assetFileNames: "[name][extname]",
+        preserveModules: true,
+        preserveModulesRoot: "lib",
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+        },
+      },
     },
+    minify: "terser",
+    sourcemap: true,
   },
 });
