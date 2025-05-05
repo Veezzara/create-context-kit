@@ -1,54 +1,150 @@
-# React + TypeScript + Vite
+# React Context Kit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A lightweight and efficient state management solution for React applications, inspired by Redux Toolkit's `createSlice`. This library provides a simple and intuitive way to manage state using React Context with built-in support for selective re-renders.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🚀 Simple and intuitive API similar to Redux Toolkit's `createSlice`
+- 🔍 Built-in support for selective re-renders with `withSelector`
+- 🎯 TypeScript support out of the box
+- 📦 Small bundle size
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install react-context-kit
+# or
+yarn add react-context-kit
+# or
+pnpm add react-context-kit
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Quick Start
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Basic Usage
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
+```tsx
+import { createContextState } from 'react-context-kit';
+
+// Define your state and reducers
+const CounterContext = createContextState({
+  initialState: {
+    count: 0,
   },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
+  reducers: {
+    increment: (state, payload: number) => ({
+      ...state,
+      count: state.count + payload,
+    }),
   },
-})
+});
+
+// Use in your components
+const Counter = () => {
+  const state = CounterContext.useState();
+  const actions = CounterContext.useActions();
+
+  return (
+    <div>
+      <span>Count: {state.count}</span>
+      <button onClick={() => actions.increment(1)}>Increment</button>
+    </div>
+  );
+};
+
+// Wrap your app with the Provider
+const App = () => (
+  <CounterContext.Provider>
+    <Counter />
+  </CounterContext.Provider>
+);
+```
+
+### Selective Re-renders with withSelector
+
+```tsx
+import { createContextState, withSelector } from 'react-context-kit';
+
+const UserContext = createContextState({
+  initialState: {
+    name: 'John',
+    age: 30,
+  },
+  reducers: {
+    updateName: (state, payload: string) => ({
+      ...state,
+      name: payload,
+    }),
+  },
+});
+
+// Component will only re-render when name changes
+const NameDisplay = withSelector({
+  useState: UserContext.useState,
+  select: (state) => state.name,
+  Component: (props, selectedState) => (
+    <div>Name: {selectedState}</div>
+  ),
+});
+```
+
+### Using withProvider for Clean Component Structure
+
+```tsx
+import { withProvider } from 'react-context-kit';
+
+const UserProfile = withProvider({
+  Provider: UserContext.Provider,
+  Component: () => {
+    const state = UserContext.useState();
+    const actions = UserContext.useActions();
+
+    return (
+      <div>
+        <NameDisplay />
+        <button onClick={() => actions.updateName('Jane')}>
+          Update Name
+        </button>
+      </div>
+    );
+  },
+});
+```
+
+## API Reference
+
+### createContextState
+
+Creates a new context state with initial state and reducers.
+
+```tsx
+const context = createContextState({
+  initialState: T,
+  reducers: {
+    [actionName: string]: (state: T, payload: P) => T
+  }
+});
+```
+
+### withSelector
+
+Creates a component that only re-renders when the selected state changes.
+
+```tsx
+const Component = withSelector({
+  useState: Context.useState,
+  select: (state) => selectedState,
+  Component: (props, selectedState) => JSX.Element
+});
+```
+
+### withProvider
+
+Wraps a component with a context provider.
+
+```tsx
+const Component = withProvider({
+  Provider: Context.Provider,
+  Component: () => JSX.Element
+});
 ```
