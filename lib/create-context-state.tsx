@@ -40,10 +40,10 @@ export const createContextState = <
 >(
   init: ContextStateInit<T, D>
 ): ContextState<T, D> => {
-  const ValueContext = createContext(init.initialState);
-  const ActionsContext = createContext<ContextActions<T, D> | undefined>(
-    undefined
-  );
+  const defaultValue = Symbol("defaultValue");
+
+  const ValueContext = createContext<T | typeof defaultValue>(defaultValue);
+  const ActionsContext = createContext<ContextActions<T, D> | typeof defaultValue>(defaultValue);
 
   const reducer = combineReducers(init);
 
@@ -63,6 +63,7 @@ export const createContextState = <
     );
   };
 
+
   /**
    * Hook to access the current state
    * @throws Error if used outside of Provider
@@ -70,7 +71,11 @@ export const createContextState = <
    */
   const useState = () => {
     const context = useContext(ValueContext);
-    if (!context) throw new Error("useState must be used within a Provider");
+    if (context === defaultValue) {
+      throw new Error(
+        "useState must be used within a Provider. Make sure your component is wrapped with the Provider component."
+      );
+    }
     return context;
   };
 
@@ -81,7 +86,11 @@ export const createContextState = <
    */
   const useActions = () => {
     const context = useContext(ActionsContext);
-    if (!context) throw new Error("useActions must be used within a Provider");
+    if (context === defaultValue) {
+      throw new Error(
+        "useActions must be used within a Provider. Make sure your component is wrapped with the Provider component."
+      );
+    }
     return context;
   };
 
