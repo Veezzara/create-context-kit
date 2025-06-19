@@ -134,7 +134,7 @@ Creates a component that only re-renders when the selected state changes.
 const Component = withSelector({
   useState: Context.useState,
   select: (state) => selectedState,
-  Component: (props, selectedState) => JSX.Element
+  Component: (props, selectedState) => ReactNode
 });
 ```
 
@@ -145,6 +145,6 @@ Wraps a component with a context provider.
 ```tsx
 const Component = withProvider({
   Provider: Context.Provider,
-  Component: () => JSX.Element
+  Component: () => ReactNode
 });
 ```
